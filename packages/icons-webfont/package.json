@@ -20,9 +20,9 @@
     "build:prepare": "mkdir -p icons-outlined dist && rm -fdr dist/*",
     "build:webfont": "rm -fd dist/fonts/* && node .build/build-webfont.mjs",
     "build:css": "pnpm run build:css:outline && pnpm run build:css:filled",
-    "build:css:filled": "sass dist/tabler-icons-filled.scss dist/tabler-icons-filled.css --style expanded && sass dist/tabler-icons-filled.scss dist/tabler-icons-filled.min.css --style compressed",
-    "build:css:outline": "sass dist/tabler-icons.scss dist/tabler-icons.css --style expanded --no-source-map && sass dist/tabler-icons.scss dist/tabler-icons.min.css --style compressed --no-source-map && sass dist/tabler-icons-200.scss dist/tabler-icons-200.css --style expanded --no-source-map && sass dist/tabler-icons-200.scss dist/tabler-icons-200.min.css --style compressed --no-source-map && sass dist/tabler-icons-300.scss dist/tabler-icons-300.css --style expanded --no-source-map && sass dist/tabler-icons-300.scss dist/tabler-icons-300.min.css --style compressed --no-source-map",
-    "build:css:all": "sass dist/tabler-icons.scss dist/tabler-icons.css --style expanded --no-source-map && sass dist/tabler-icons.scss dist/tabler-icons.min.css --style compressed --no-source-map && sass dist/tabler-icons-200.scss dist/tabler-icons-200.css --style expanded --no-source-map && sass dist/tabler-icons-200.scss dist/tabler-icons-200.min.css --style compressed --no-source-map && sass dist/tabler-icons-300.scss dist/tabler-icons-300.css --style expanded --no-source-map && sass dist/tabler-icons-300.scss dist/tabler-icons-300.min.css --style compressed --no-source-map",
+    "build:css:filled": "for file in dist/*-filled.scss; do [ -e \"$file\" ] || continue; sass \"$file\" \"${file%.scss}.css\" --style expanded --no-source-map && sass \"$file\" \"${file%.scss}.min.css\" --style compressed --no-source-map; done",
+    "build:css:outline": "for file in dist/tabler-icons.scss dist/tabler-icons-[0-9]*.scss; do [ -e \"$file\" ] || continue; sass \"$file\" \"${file%.scss}.css\" --style expanded --no-source-map && sass \"$file\" \"${file%.scss}.min.css\" --style compressed --no-source-map; done",
+    "build:css:all": "pnpm run build:css",
     "clean": "find dist -mindepth 1 -delete 2>/dev/null; rm -rf dist && rm -rf ./icons-outlined",
     "copy": "pnpm run copy:license",
     "copy:license": "cp ../../LICENSE ./LICENSE"

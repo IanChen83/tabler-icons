@@ -298,8 +298,14 @@ export async function generateFont(strokeName, type, DIR) {
         return a.name.localeCompare(b.name)
      })
 
+  const glyphNames = new Set(glyphs.map(({ name }) => name));
+
   // Convert aliases object to array of {from, to} objects
-  const aliasesArray = aliases[type] ? Object.entries(aliases[type]).map(([from, to]) => ({ from, to })) : []
+  const aliasesArray = aliases[type] ?
+     Object.entries(aliases[type])
+        .filter(([, to]) => glyphNames.has(to))
+        .map(([from, to]) => ({ from, to })) :
+     []
 
   const options = {
      name: `Tabler Icons ${type.charAt(0).toUpperCase() + type.slice(1)}`,

@@ -472,7 +472,7 @@ export const printChangelog = function (newIcons, modifiedIcons, renamedIcons, p
   console.log('');
 };
 
-export const getCompileOptions = () => {
+export const getCompileOptions = (tags) => {
   const compileOptions = {
     includeIcons: [],
     strokeWidth: null,
@@ -501,7 +501,6 @@ export const getCompileOptions = () => {
         if (!Array.isArray(tempOptions.includeCategories)) {
           throw 'property includeCategories is not an array or string';
         }
-        const tags = Object.entries(require('./tags.json'));
         tempOptions.includeCategories.forEach(function (category) {
           category = category.charAt(0).toUpperCase() + category.slice(1);
           for (const [icon, data] of tags) {
