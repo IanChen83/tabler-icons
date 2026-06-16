@@ -476,6 +476,7 @@ export const getCompileOptions = (tags) => {
   const compileOptions = {
     includeIcons: [],
     strokeWidth: null,
+    strokeWidths: null,
     fontForge: 'fontforge',
   };
 
@@ -535,6 +536,18 @@ export const getCompileOptions = (tags) => {
           throw 'property strokeWidth is not a string or number';
         }
         compileOptions.strokeWidth = tempOptions.strokeWidth.toString();
+      }
+
+      if (typeof tempOptions.strokeWidths !== 'undefined') {
+        if (!Array.isArray(tempOptions.strokeWidths)) {
+          throw 'property strokeWidths is not an array';
+        }
+        tempOptions.strokeWidths.forEach((strokeWidth) => {
+          if (typeof strokeWidth !== 'string' && typeof strokeWidth !== 'number') {
+            throw 'property strokeWidths must contain only strings or numbers';
+          }
+        });
+        compileOptions.strokeWidths = tempOptions.strokeWidths.map((strokeWidth) => strokeWidth.toString());
       }
 
       if (typeof tempOptions.fontForge !== 'undefined') {

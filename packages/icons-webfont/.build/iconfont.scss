@@ -10,6 +10,19 @@ $ti-font-path: './fonts' !default;
 $ti-font-display: null !default;
 $ti-prefix: 'ti' !default;
 
+<% if (it.weights) { %>
+<% it.weights.forEach(function(weight) { %>
+@font-face {
+  font-family: $ti-font-family;
+  font-style: normal;
+  font-weight: <%= weight.name %>;
+  font-display: $ti-font-display;
+  src: url('#{$ti-font-path}/<%= weight.fileName %>.woff2?v<%= it.v %>') format('woff2'),
+    url('#{$ti-font-path}/<%= weight.fileName %>.woff?') format('woff'),
+    url('#{$ti-font-path}/<%= weight.fileName %>.ttf?v<%= it.v %>') format('truetype');
+}
+<% }) %>
+<% } else { %>
 @font-face {
   font-family: $ti-font-family;
   font-style: normal;
@@ -19,6 +32,7 @@ $ti-prefix: 'ti' !default;
     url('#{$ti-font-path}/<%= it.fileName %>.woff?') format('woff'),
     url('#{$ti-font-path}/<%= it.fileName %>.ttf?v<%= it.v %>') format('truetype');
 }
+<% } %>
 
 .#{$ti-prefix} {
   font-family: $ti-font-family !important;
@@ -33,6 +47,24 @@ $ti-prefix: 'ti' !default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+<% if (it.weights) { %>
+<% it.weights.forEach(function(weight) { %>
+.#{$ti-prefix}-<%= weight.name %> {
+  font-family: $ti-font-family !important;
+  speak: none;
+  font-style: normal;
+  font-weight: <%= weight.name %>;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+<% }) %>
+<% } %>
 
 @function unicode($str) {
   @return string.unquote("\"")+string.unquote(string.insert($str, "\\", 1))+string.unquote("\"")

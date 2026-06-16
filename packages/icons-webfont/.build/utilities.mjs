@@ -269,6 +269,10 @@ export function calculateHash(content) {
   return crypto.createHash('sha1').update(content).digest("hex");
 }
 
+function getFontFileName(strokeName, type) {
+  return `tabler-icons${type === 'outline' ? `-${strokeName}` : `-${type}`}`;
+}
+
 export async function generateFont(strokeName, type, DIR) {
 
   console.log(`Generating font for ${type === 'outline' ? `outline/${strokeName}` : `filled`}`);
@@ -278,7 +282,7 @@ export async function generateFont(strokeName, type, DIR) {
   const woffFile = Buffer.from(ttf2woff(ttfFile).buffer);
   const woff2File = await wawoff2.compress(ttfFile);
 
-  const fileName = `tabler-icons${type === 'outline' ? (strokeName !== "400" ? `-${strokeName}` : '') : `-${type}`}`;
+  const fileName = getFontFileName(strokeName, type);
 
   // Ensure dist/fonts directory exists
   mkdirSync(path.join(DIR, 'dist/fonts'), { recursive: true });
@@ -324,6 +328,49 @@ export async function generateFont(strokeName, type, DIR) {
   const compiledHtml = template(readFileSync(path.join(DIR, '.build/iconfont.html')).toString())
   const resultHtml = compiledHtml(options)
   writeFileSync(path.join(DIR, `dist/${fileName}.html`), resultHtml)
+}
+
+export function generateMainOutlineFont(strokeEntries, files, DIR) {
+  const glyphs = files
+    .filter(({ unicode }) => unicode)
+    .map(({ name, unicode }) => ({
+      unicode: [String.fromCodePoint(parseInt(unicode, 16))],
+      name,
+      unicodeHex: unicode.toString(16),
+    }))
+    .sort(function (a, b) {
+      return a.name.localeCompare(b.name)
+    })
+
+  const glyphNames = new Set(glyphs.map(({ name }) => name));
+
+  const aliasesArray = aliases.outline ?
+    Object.entries(aliases.outline)
+      .filter(([, to]) => glyphNames.has(to))
+      .map(([from, to]) => ({ from, to })) :
+    []
+
+  const weights = strokeEntries.map(([strokeName]) => ({
+    name: strokeName,
+    fileName: getFontFileName(strokeName, 'outline'),
+  }));
+
+  const options = {
+    name: 'Tabler Icons Outline',
+    fileName: 'tabler-icons',
+    glyphs,
+    v: packageJson.version,
+    aliases: aliasesArray,
+    weights,
+  }
+
+  const compiled = template(readFileSync(path.join(DIR, '.build/iconfont.scss')).toString())
+  const resultSCSS = compiled(options)
+  writeFileSync(path.join(DIR, 'dist/tabler-icons.scss'), resultSCSS)
+
+  const compiledHtml = template(readFileSync(path.join(DIR, '.build/iconfont.html')).toString())
+  const resultHtml = compiledHtml(options)
+  writeFileSync(path.join(DIR, 'dist/tabler-icons.html'), resultHtml)
 }
 
 // Process icons with cache mechanism

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { getAllIcons, getCompileOptions, getPackageDir, strokes } from '../../../.build/helpers.mjs';
-import { generateFont, mergePaths, offsetPath, processIcons, removeComments, reorientPath, splitPaths } from './utilities.mjs';
+import { generateFont, generateMainOutlineFont, mergePaths, offsetPath, processIcons, removeComments, reorientPath, splitPaths } from './utilities.mjs';
 
 const DIR = getPackageDir('icons-webfont')
 const allIcons = getAllIcons(true);
@@ -23,19 +23,23 @@ const getProjectCompileOptions = () => {
    }
 };
 
-const getStrokeEntries = (strokeWidth) => {
-   if (!strokeWidth) {
+const getStrokeEntries = ({ strokeWidth, strokeWidths }) => {
+   const requestedStrokeWidths = strokeWidths || (strokeWidth ? [strokeWidth] : null);
+
+   if (!requestedStrokeWidths) {
       return Object.entries(strokes);
    }
 
-   const strokeWidthValue = strokeWidth.toString();
-   const strokeEntry = Object.entries(strokes).find(([, width]) => width.toString() === strokeWidthValue);
+   return requestedStrokeWidths.map((requestedStrokeWidth) => {
+      const strokeWidthValue = requestedStrokeWidth.toString();
+      const strokeEntry = Object.entries(strokes).find(([, width]) => width.toString() === strokeWidthValue);
 
-   if (!strokeEntry) {
-      throw new Error(`Unsupported strokeWidth "${strokeWidthValue}". Available stroke widths: ${Object.values(strokes).join(', ')}`);
-   }
+      if (!strokeEntry) {
+         throw new Error(`Unsupported strokeWidth "${strokeWidthValue}". Available stroke widths: ${Object.values(strokes).join(', ')}`);
+      }
 
-   return [strokeEntry];
+      return strokeEntry;
+   });
 };
 
 const compileOptions = getProjectCompileOptions();
@@ -46,7 +50,7 @@ const filterIcons = (files) =>
 const { outline, filled } = allIcons;
 const outlineFiles = filterIcons(outline);
 const filledFiles = filterIcons(filled);
-const strokeEntries = getStrokeEntries(compileOptions.strokeWidth);
+const strokeEntries = getStrokeEntries(compileOptions);
 
 // Generate outline icons
 for await (const [strokeName, strokeWidth] of strokeEntries) {
@@ -70,6 +74,8 @@ for await (const [strokeName, strokeWidth] of strokeEntries) {
 
    await generateFont(strokeName, 'outline', DIR);
 }
+
+generateMainOutlineFont(strokeEntries, outlineFiles, DIR);
 
 // Generate filled icons
 const filledDirname = path.join(DIR, 'icons-filled');
